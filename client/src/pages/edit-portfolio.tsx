@@ -13,6 +13,13 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Form,
   FormControl,
   FormField,
@@ -23,6 +30,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import type { Portfolio, Project, Education, Experience } from "@shared/schema";
+import { generateSimpleResumePDF } from "@/lib/resume-generator";
 import {
   User,
   Code2,
@@ -39,9 +47,17 @@ import {
   Linkedin,
   Twitter,
   MapPin,
+  Download,
+  Upload,
+  Image as ImageIcon,
 } from "lucide-react";
 
+const ROLE_OPTIONS = ["developer", "tester", "ai_ml", "data_analyst", "premium"] as const;
+type Role = (typeof ROLE_OPTIONS)[number];
+
+
 const portfolioFormSchema = z.object({
+  role: z.custom<Role>().optional(),
   bio: z.string().optional(),
   title: z.string().optional(),
   location: z.string().optional(),
@@ -57,20 +73,23 @@ export default function EditPortfolio() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
-  
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [education, setEducation] = useState<Education[]>([]);
   const [experience, setExperience] = useState<Experience[]>([]);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
   const form = useForm<PortfolioFormValues>({
     resolver: zodResolver(portfolioFormSchema),
     defaultValues: {
+      role: "developer",
       bio: "",
       title: "",
       location: "",
@@ -87,6 +106,7 @@ export default function EditPortfolio() {
         const data: Portfolio | null = await api.getMyPortfolio();
         if (data) {
           form.reset({
+            role: (data as any).role || "developer",
             bio: data.bio || "",
             title: data.title || "",
             location: data.location || "",
@@ -99,6 +119,7 @@ export default function EditPortfolio() {
           setProjects(data.projects || []);
           setEducation(data.education || []);
           setExperience(data.experience || []);
+          setProfilePicture((data as any).profilePicture || null);
         }
       } catch (error) {
         console.error("Failed to fetch portfolio:", error);
@@ -114,10 +135,12 @@ export default function EditPortfolio() {
     try {
       await api.updatePortfolio({
         ...data,
+        role: data.role || "developer",
         skills,
         projects,
         education,
         experience,
+        profilePicture,
       });
       toast({
         title: "Portfolio saved!",
@@ -213,6 +236,150 @@ export default function EditPortfolio() {
     setExperience(experience.filter((e) => e.id !== id));
   };
 
+  const handleProfilePictureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file type first
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please choose an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Compress and resize image to prevent database entity size errors
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        // Create canvas for compression
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          toast({
+            title: "Error processing image",
+            description: "Unable to process the image. Please try another.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Calculate new dimensions (max 400x400, maintain aspect ratio)
+        const maxDimension = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDimension) {
+            height = (height * maxDimension) / width;
+            width = maxDimension;
+          }
+        } else {
+          if (height > maxDimension) {
+            width = (width * maxDimension) / height;
+            height = maxDimension;
+          }
+        }
+
+        // Set canvas dimensions and draw compressed image
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to base64 with compression (JPEG format, 0.8 quality)
+        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.8);
+
+        // Check if compressed size is still reasonable (should be well under 200KB after compression)
+        const sizeInKB = Math.round((compressedBase64.length * 3) / 4 / 1024);
+
+        if (sizeInKB > 300) {
+          toast({
+            title: "Image still too large",
+            description: `Compressed size: ${sizeInKB}KB. Please try a smaller image.`,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setProfilePicture(compressedBase64);
+        toast({
+          title: "Image uploaded successfully",
+          description: `Compressed to ${sizeInKB}KB for optimal storage.`,
+        });
+      };
+
+      img.onerror = () => {
+        toast({
+          title: "Error loading image",
+          description: "Unable to load the image. Please try another file.",
+          variant: "destructive",
+        });
+      };
+
+      img.src = event.target?.result as string;
+    };
+
+    reader.onerror = () => {
+      toast({
+        title: "Error reading file",
+        description: "Unable to read the file. Please try again.",
+        variant: "destructive",
+      });
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const removeProfilePicture = () => {
+    setProfilePicture(null);
+  };
+
+  const downloadResume = async () => {
+    if (!user) return;
+
+    setIsGeneratingPDF(true);
+    try {
+      const currentPortfolio: Portfolio = {
+        id: "",
+        userId: user.id,
+        role: form.getValues("role") || "developer",
+        bio: form.getValues("bio") || null,
+        title: form.getValues("title") || null,
+        location: form.getValues("location") || null,
+        website: form.getValues("website") || null,
+        github: form.getValues("github") || null,
+        linkedin: form.getValues("linkedin") || null,
+        twitter: form.getValues("twitter") || null,
+        profilePicture: profilePicture || null,
+        skills,
+        projects,
+        education,
+        experience,
+      };
+
+      generateSimpleResumePDF({
+        portfolio: currentPortfolio,
+        userName: user.name,
+      });
+      toast({
+        title: "Resume downloaded!",
+        description: "Your resume PDF has been generated successfully.",
+      });
+    } catch (error) {
+      console.error("Failed to generate resume:", error);
+      toast({
+        title: "Failed to generate resume",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto max-w-3xl px-4 py-8">
@@ -243,28 +410,106 @@ export default function EditPortfolio() {
             Edit Portfolio
           </h1>
         </div>
-        <Button
-          onClick={form.handleSubmit(onSubmit)}
-          disabled={isSaving}
-          data-testid="button-save"
-        >
-          {isSaving ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" />
-              Save Changes
-            </>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={downloadResume}
+            disabled={isGeneratingPDF}
+            data-testid="button-download-resume"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {isGeneratingPDF ? "Generating..." : "Download Resume"}
+          </Button>
+          <Button
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={isSaving}
+            data-testid="button-save"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {/* Basic Info */}
+          {/* Profile Picture */}
+          <Card data-testid="card-profile-picture">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImageIcon className="h-5 w-5" />
+                Profile Picture
+              </CardTitle>
+              <CardDescription>
+                Upload a profile picture for your portfolio
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col items-center gap-4 sm:flex-row">
+                {profilePicture ? (
+                  <div className="relative">
+                    <img
+                      src={profilePicture}
+                      alt="Profile preview"
+                      className="h-32 w-32 rounded-full object-cover border-2"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -right-2 -top-2 h-8 w-8 rounded-full"
+                      onClick={removeProfilePicture}
+                      data-testid="button-remove-picture"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-dashed bg-muted">
+                    <User className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1 space-y-2">
+                  <label htmlFor="profile-picture-upload">
+                    <div className="cursor-pointer">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        asChild
+                        data-testid="button-upload-picture"
+                      >
+                        <span>
+                          <Upload className="mr-2 h-4 w-4" />
+                          {profilePicture ? "Change Picture" : "Upload Picture"}
+                        </span>
+                      </Button>
+                    </div>
+                  </label>
+                  <input
+                    id="profile-picture-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleProfilePictureUpload}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Images are automatically compressed and resized to 400x400px. Any format accepted.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Role & Basic Info */}
           <Card data-testid="card-basic-info">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -272,10 +517,40 @@ export default function EditPortfolio() {
                 Basic Information
               </CardTitle>
               <CardDescription>
-                Tell visitors about yourself
+                Choose your primary role and tell visitors about yourself
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Primary Role (for template)</FormLabel>
+                    <FormDescription>
+                      This controls which portfolio template is used on your public page.
+                    </FormDescription>
+                    <Select
+                      value={field.value || "developer"}
+                      onValueChange={(value) => field.onChange(value as Role)}
+                    >
+                      <FormControl>
+                        <SelectTrigger data-testid="select-role">
+                          <SelectValue placeholder="Select your role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="developer">Developer</SelectItem>
+                        <SelectItem value="tester">Tester / QA Engineer</SelectItem>
+                        <SelectItem value="ai_ml">AI / ML Engineer</SelectItem>
+                        <SelectItem value="data_analyst">Data Analyst</SelectItem>
+                        <SelectItem value="premium">Premium Dark Theme</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="title"

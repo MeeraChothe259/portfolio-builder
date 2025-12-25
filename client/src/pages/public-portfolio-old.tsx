@@ -15,6 +15,7 @@ import {
   Linkedin,
   Twitter,
   ExternalLink,
+  Mail,
   Briefcase,
   GraduationCap,
   FolderKanban,
@@ -24,12 +25,6 @@ import {
   Check,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { DeveloperTemplate } from "@/components/templates/DeveloperTemplate";
-import { TesterTemplate } from "@/components/templates/TesterTemplate";
-import { AIMLTemplate } from "@/components/templates/AIMLTemplate";
-import { DataAnalystTemplate } from "@/components/templates/DataAnalystTemplate";
-import { PremiumTemplate } from "@/components/templates/PremiumTemplate";
-
 
 export default function PublicPortfolioPage() {
   const { username } = useParams<{ username: string }>();
@@ -134,31 +129,6 @@ export default function PublicPortfolioPage() {
 
   const role = (portfolio as any).role || "developer";
 
-  // If using a specialized template, render it
-  if (role === "premium" || role === "tester" || role === "ai_ml" || role === "data_analyst" || role === "developer") {
-    const templateProps = {
-      portfolio,
-      getInitials,
-      copied,
-      onCopyUrl: copyUrl,
-    };
-
-    switch (role) {
-      case "premium":
-        return <PremiumTemplate {...templateProps} />;
-      case "tester":
-        return <TesterTemplate {...templateProps} />;
-      case "ai_ml":
-        return <AIMLTemplate {...templateProps} />;
-      case "data_analyst":
-        return <DataAnalystTemplate {...templateProps} />;
-      case "developer":
-      default:
-        return <DeveloperTemplate {...templateProps} />;
-    }
-  }
-
-  // Fallback to generic template (this code below is kept for backwards compatibility)
   const roleLabelMap: Record<string, string> = {
     developer: "Developer",
     tester: "Tester / QA Engineer",
@@ -195,46 +165,33 @@ export default function PublicPortfolioPage() {
     (portfolio.experience && portfolio.experience.length > 0);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-background via-background to-background">
-      {/* Soft background orbs */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-40 top-[-10rem] h-80 w-80 rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute right-[-6rem] top-40 h-80 w-80 rounded-full bg-purple-500/10 blur-3xl" />
-        <div className="absolute bottom-[-10rem] left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-sky-500/10 blur-3xl" />
-      </div>
-
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <section className={`relative border-b bg-gradient-to-b ${heroGradientByRole[role] || heroGradientByRole.developer} py-16 md:py-24`}>
+      <section className={`bg-gradient-to-b ${heroGradientByRole[role] || heroGradientByRole.developer} py-16 md:py-24`}>
         <div className="container mx-auto max-w-5xl px-4">
           <div className="flex flex-col items-center text-center">
-            <Avatar className="mb-6 h-32 w-32 shadow-xl ring-4 ring-background/70">
+            <Avatar className="mb-6 h-32 w-32 shadow-xl ring-4 ring-background/60">
               <AvatarFallback className="bg-primary text-3xl text-primary-foreground">
                 {getInitials(portfolio.user.name)}
               </AvatarFallback>
             </Avatar>
-
+            
             <h1 className="mb-2 text-4xl font-bold" data-testid="text-portfolio-name">
               {portfolio.user.name}
             </h1>
 
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.35em] text-primary/80">
+            <p className="mb-3 text-sm font-medium uppercase tracking-[0.15em] text-primary/80">
               {roleLabelMap[role] || "Professional"}
             </p>
-
+            
             {portfolio.title && (
-              <p
-                className="mb-4 max-w-xl text-balance text-lg text-muted-foreground"
-                data-testid="text-portfolio-title"
-              >
+              <p className="mb-4 text-xl text-muted-foreground" data-testid="text-portfolio-title">
                 {portfolio.title}
               </p>
             )}
-
+            
             {portfolio.location && (
-              <p
-                className="mb-6 inline-flex items-center gap-2 rounded-full bg-background/70 px-4 py-1 text-sm text-muted-foreground shadow-sm backdrop-blur"
-                data-testid="text-portfolio-location"
-              >
+              <p className="mb-6 flex items-center gap-2 text-muted-foreground" data-testid="text-portfolio-location">
                 <MapPin className="h-4 w-4" />
                 {portfolio.location}
               </p>
@@ -265,7 +222,11 @@ export default function PublicPortfolioPage() {
             )}
 
             {/* Share Button */}
-            <Button variant="default" onClick={copyUrl} data-testid="button-share">
+            <Button
+              variant="outline"
+              onClick={copyUrl}
+              data-testid="button-share"
+            >
               {copied ? (
                 <>
                   <Check className="mr-2 h-4 w-4" />
@@ -285,7 +246,7 @@ export default function PublicPortfolioPage() {
       {/* Content Sections */}
       <div className="container mx-auto max-w-5xl px-4 py-12">
         {!hasContent ? (
-          <Card className="border-dashed bg-background/70 text-center shadow-sm backdrop-blur">
+          <Card className="text-center">
             <CardContent className="py-12">
               <p className="text-muted-foreground">
                 This portfolio is still being built. Check back soon!
@@ -297,16 +258,13 @@ export default function PublicPortfolioPage() {
             {/* About Section */}
             {portfolio.bio && (
               <section data-testid="section-about">
-                <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold">
+                <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
                   <Briefcase className="h-6 w-6 text-primary" />
                   About
                 </h2>
-                <Card className="border-none bg-gradient-to-br from-background/80 via-background/60 to-primary/5 shadow-lg backdrop-blur">
-                  <CardContent className="p-6 md:p-8">
-                    <p
-                      className="whitespace-pre-wrap text-balance leading-relaxed text-muted-foreground"
-                      data-testid="text-bio"
-                    >
+                <Card>
+                  <CardContent className="p-6">
+                    <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground" data-testid="text-bio">
                       {portfolio.bio}
                     </p>
                   </CardContent>
@@ -317,18 +275,18 @@ export default function PublicPortfolioPage() {
             {/* Skills Section */}
             {portfolio.skills && portfolio.skills.length > 0 && (
               <section data-testid="section-skills">
-                <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold">
+                <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
                   <Code2 className="h-6 w-6 text-primary" />
                   Skills
                 </h2>
-                <Card className="border-none bg-gradient-to-br from-background/80 via-background/60 to-primary/5 shadow-lg backdrop-blur">
-                  <CardContent className="p-6 md:p-8">
+                <Card>
+                  <CardContent className="p-6">
                     <div className="flex flex-wrap gap-2">
                       {portfolio.skills.map((skill, index) => (
                         <Badge
                           key={index}
                           variant={badgeVariantByRole[role] as any}
-                          className="px-4 py-1.5 text-sm shadow-sm"
+                          className="px-4 py-1.5 text-sm"
                           data-testid={`badge-skill-${index}`}
                         >
                           {skill}
@@ -343,7 +301,7 @@ export default function PublicPortfolioPage() {
             {/* Projects Section (layout varies slightly by role) */}
             {portfolio.projects && portfolio.projects.length > 0 && (
               <section data-testid="section-projects">
-                <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold">
+                <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
                   <FolderKanban className="h-6 w-6 text-primary" />
                   {role === "ai_ml" ? "Highlighted ML Projects" : role === "data_analyst" ? "Analytics Projects" : "Projects"}
                 </h2>
@@ -352,8 +310,8 @@ export default function PublicPortfolioPage() {
                     role === "ai_ml"
                       ? "grid gap-6"
                       : role === "data_analyst"
-                        ? "grid gap-6 md:grid-cols-1"
-                        : "grid gap-6 md:grid-cols-2"
+                      ? "grid gap-6 md:grid-cols-1"
+                      : "grid gap-6 md:grid-cols-2"
                   }
                 >
                   {portfolio.projects.map((project, index) => (
@@ -361,10 +319,10 @@ export default function PublicPortfolioPage() {
                       key={project.id}
                       className={
                         role === "ai_ml"
-                          ? "border-primary/30 bg-gradient-to-br from-background/90 via-primary/5 to-background hover:from-primary/10 hover:via-background hover:to-background hover-elevate"
+                          ? "border-primary/20 bg-gradient-to-br from-background to-primary/5 hover:from-primary/5 hover:to-background hover-elevate"
                           : role === "data_analyst"
-                            ? "border-amber-500/30 bg-gradient-to-br from-background/90 via-amber-500/5 to-background hover:from-amber-500/10 hover:via-background hover:to-background hover-elevate"
-                            : "bg-background/80 shadow-sm hover:bg-background/100 hover-elevate"
+                          ? "border-amber-500/20 bg-gradient-to-br from-background to-amber-500/5 hover:from-amber-500/5 hover:to-background hover-elevate"
+                          : "hover-elevate"
                       }
                       data-testid={`card-project-${index}`}
                     >
@@ -398,13 +356,13 @@ export default function PublicPortfolioPage() {
             {/* Education Section */}
             {portfolio.education && portfolio.education.length > 0 && (
               <section data-testid="section-education">
-                <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold">
+                <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
                   <GraduationCap className="h-6 w-6 text-primary" />
                   Education
                 </h2>
-                <Card className="border-none bg-gradient-to-br from-background/80 via-background/60 to-primary/5 shadow-lg backdrop-blur">
-                  <CardContent className="p-6 md:p-8">
-                    <div className="relative space-y-8 pl-8 before:absolute before:left-[11px] before:top-2 before:h-[calc(100%-16px)] before:w-0.5 before:bg-border/60">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="relative space-y-8 pl-8 before:absolute before:left-[11px] before:top-2 before:h-[calc(100%-16px)] before:w-0.5 before:bg-border">
                       {portfolio.education.map((edu, index) => (
                         <div key={edu.id} className="relative" data-testid={`education-item-${index}`}>
                           <div className="absolute -left-8 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-primary bg-background">
@@ -432,13 +390,13 @@ export default function PublicPortfolioPage() {
             {/* Experience Section */}
             {portfolio.experience && portfolio.experience.length > 0 && (
               <section data-testid="section-experience">
-                <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold">
+                <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
                   <Briefcase className="h-6 w-6 text-primary" />
                   Experience
                 </h2>
-                <Card className="border-none bg-gradient-to-br from-background/80 via-background/60 to-primary/5 shadow-lg backdrop-blur">
-                  <CardContent className="p-6 md:p-8">
-                    <div className="relative space-y-8 pl-8 before:absolute before:left-[11px] before:top-2 before:h-[calc(100%-16px)] before:w-0.5 before:bg-border/60">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="relative space-y-8 pl-8 before:absolute before:left-[11px] before:top-2 before:h-[calc(100%-16px)] before:w-0.5 before:bg-border">
                       {portfolio.experience.map((exp, index) => (
                         <div key={exp.id} className="relative" data-testid={`experience-item-${index}`}>
                           <div className="absolute -left-8 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-primary bg-background">
@@ -472,7 +430,7 @@ export default function PublicPortfolioPage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t bg-background/80 py-8 backdrop-blur">
+      <footer className="border-t py-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm text-muted-foreground">
             Built with{" "}

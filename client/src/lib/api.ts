@@ -83,6 +83,17 @@ export const api = {
     return res.json();
   },
 
+  async analyzePortfolio() {
+    const res = await authFetch("/portfolio/analyze", {
+      method: "POST",
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Failed to analyze portfolio");
+    }
+    return res.json();
+  },
+
   // Health check
   async healthCheck() {
     const res = await fetch(`${API_BASE}/health`);

@@ -6,7 +6,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   getPortfolioByUserId(userId: string): Promise<Portfolio | undefined>;
   getPortfolioByUsername(username: string): Promise<Portfolio | undefined>;
   createPortfolio(portfolio: InsertPortfolio): Promise<Portfolio>;
@@ -62,6 +62,8 @@ export class MemStorage implements IStorage {
     const portfolio: Portfolio = {
       id,
       userId: insertPortfolio.userId,
+      // default to developer if role is not explicitly set
+      role: (insertPortfolio as any).role || "developer",
       bio: insertPortfolio.bio || null,
       title: insertPortfolio.title || null,
       location: insertPortfolio.location || null,
@@ -69,10 +71,11 @@ export class MemStorage implements IStorage {
       github: insertPortfolio.github || null,
       linkedin: insertPortfolio.linkedin || null,
       twitter: insertPortfolio.twitter || null,
-      skills: insertPortfolio.skills || [],
-      projects: insertPortfolio.projects || [],
-      education: insertPortfolio.education || [],
-      experience: insertPortfolio.experience || [],
+      profilePicture: (insertPortfolio as any).profilePicture || null,
+      skills: (insertPortfolio.skills as any) || [],
+      projects: (insertPortfolio.projects as any) || [],
+      education: (insertPortfolio.education as any) || [],
+      experience: (insertPortfolio.experience as any) || [],
     };
     this.portfolios.set(id, portfolio);
     return portfolio;
@@ -81,7 +84,7 @@ export class MemStorage implements IStorage {
   async updatePortfolio(userId: string, updates: Partial<Portfolio>): Promise<Portfolio | undefined> {
     const portfolio = await this.getPortfolioByUserId(userId);
     if (!portfolio) return undefined;
-    
+
     const updatedPortfolio: Portfolio = {
       ...portfolio,
       ...updates,

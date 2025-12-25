@@ -46,6 +46,8 @@ export const users = pgTable("users", {
 export const portfolios = pgTable("portfolios", {
   id: varchar("id", { length: 36 }).primaryKey(),
   userId: varchar("user_id", { length: 36 }).notNull(),
+  // primary role of the person, used for role-based templates
+  role: text("role").notNull().default("developer"),
   bio: text("bio"),
   title: text("title"),
   location: text("location"),
@@ -53,6 +55,7 @@ export const portfolios = pgTable("portfolios", {
   github: text("github"),
   linkedin: text("linkedin"),
   twitter: text("twitter"),
+  profilePicture: text("profile_picture"),
   skills: jsonb("skills").$type<string[]>().default([]),
   projects: jsonb("projects").$type<z.infer<typeof projectSchema>[]>().default([]),
   education: jsonb("education").$type<z.infer<typeof educationSchema>[]>().default([]),
@@ -86,10 +89,13 @@ export const updatePortfolioSchema = z.object({
   github: z.string().optional(),
   linkedin: z.string().optional(),
   twitter: z.string().optional(),
+  profilePicture: z.string().nullish(),
   skills: z.array(z.string()).optional(),
   projects: z.array(projectSchema).optional(),
   education: z.array(educationSchema).optional(),
   experience: z.array(experienceSchema).optional(),
+  // role drives which visual template is used on the public portfolio page
+  role: z.enum(["developer", "tester", "ai_ml", "data_analyst", "premium"]).optional(),
 });
 
 // Types
@@ -114,3 +120,35 @@ export type PublicPortfolio = Portfolio & {
     name: string;
   };
 };
+
+// AI Analysis types
+export interface AIScores {
+  contentQuality: number; // 0-100
+  atsCompatibility: number; // 0-100
+  completeness: number; // 0-100
+  impact: number; // 0-100
+  overall: number; // 0-100
+}
+
+export interface AISuggestion {
+  id: string;
+  category: "critical" | "important" | "recommended";
+  title: string;
+  description: string;
+  section: "bio" | "skills" | "experience" | "projects" | "education" | "general";
+}
+
+export interface ATSIssue {
+  id: string;
+  severity: "high" | "medium" | "low";
+  issue: string;
+  suggestion: string;
+}
+
+export interface AIAnalysisResult {
+  scores: AIScores;
+  suggestions: AISuggestion[];
+  atsIssues: ATSIssue[];
+  summary: string;
+  analyzedAt: string;
+}
