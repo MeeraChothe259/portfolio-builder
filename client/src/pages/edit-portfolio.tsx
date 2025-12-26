@@ -545,6 +545,10 @@ export default function EditPortfolio() {
                         <SelectItem value="ai_ml">AI / ML Engineer</SelectItem>
                         <SelectItem value="data_analyst">Data Analyst</SelectItem>
                         <SelectItem value="premium">Premium Dark Theme</SelectItem>
+                        <SelectItem value="minimal">Minimal Template</SelectItem>
+                        <SelectItem value="creative">Creative Template</SelectItem>
+                        <SelectItem value="modern">Modern Template</SelectItem>
+                        <SelectItem value="compact">Compact Template</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

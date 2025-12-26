@@ -29,6 +29,10 @@ import { TesterTemplate } from "@/components/templates/TesterTemplate";
 import { AIMLTemplate } from "@/components/templates/AIMLTemplate";
 import { DataAnalystTemplate } from "@/components/templates/DataAnalystTemplate";
 import { PremiumTemplate } from "@/components/templates/PremiumTemplate";
+import { MinimalTemplate } from "@/components/templates/MinimalTemplate";
+import { CreativeTemplate } from "@/components/templates/CreativeTemplate";
+import { ModernTemplate } from "@/components/templates/ModernTemplate";
+import { CompactTemplate } from "@/components/templates/CompactTemplate";
 
 
 export default function PublicPortfolioPage() {
@@ -135,7 +139,7 @@ export default function PublicPortfolioPage() {
   const role = (portfolio as any).role || "developer";
 
   // If using a specialized template, render it
-  if (role === "premium" || role === "tester" || role === "ai_ml" || role === "data_analyst" || role === "developer") {
+  if (role === "premium" || role === "tester" || role === "ai_ml" || role === "data_analyst" || role === "developer" || role === "minimal" || role === "creative" || role === "modern" || role === "compact") {
     const templateProps = {
       portfolio,
       getInitials,
@@ -152,6 +156,14 @@ export default function PublicPortfolioPage() {
         return <AIMLTemplate {...templateProps} />;
       case "data_analyst":
         return <DataAnalystTemplate {...templateProps} />;
+      case "minimal":
+        return <MinimalTemplate {...templateProps} />;
+      case "creative":
+        return <CreativeTemplate {...templateProps} />;
+      case "modern":
+        return <ModernTemplate {...templateProps} />;
+      case "compact":
+        return <CompactTemplate {...templateProps} />;
       case "developer":
       default:
         return <DeveloperTemplate {...templateProps} />;

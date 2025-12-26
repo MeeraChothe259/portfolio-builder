@@ -95,7 +95,7 @@ export const updatePortfolioSchema = z.object({
   education: z.array(educationSchema).optional(),
   experience: z.array(experienceSchema).optional(),
   // role drives which visual template is used on the public portfolio page
-  role: z.enum(["developer", "tester", "ai_ml", "data_analyst", "premium"]).optional(),
+  role: z.enum(["developer", "tester", "ai_ml", "data_analyst", "premium", "minimal", "creative", "modern", "compact"]).optional(),
 });
 
 // Types

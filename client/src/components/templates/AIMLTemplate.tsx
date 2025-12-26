@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import type { PublicPortfolio } from "@shared/schema";
 import {
   Github,
+  Linkedin,
+  Twitter,
   ChevronLeft,
   ChevronRight,
   Youtube,
@@ -190,6 +192,56 @@ export function AIMLTemplate({ portfolio, getInitials }: AIMLTemplateProps) {
                   <button onClick={prevAchievement} className="absolute left-0 top-1/2 -translate-x-12 -translate-y-1/2 rounded-full bg-white/10 p-3 backdrop-blur-sm hover:bg-white/20"><ChevronLeft className="h-6 w-6" /></button>
                   <button onClick={nextAchievement} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 rounded-full bg-white/10 p-3 backdrop-blur-sm hover:bg-white/20"><ChevronRight className="h-6 w-6" /></button>
                 </>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Connect with Me Section */}
+      {(portfolio.github || portfolio.linkedin || portfolio.twitter) && (
+        <section className="px-4 py-20">
+          <div className="container mx-auto max-w-6xl">
+            <div className="mb-12 flex justify-center">
+              <Badge className="bg-white/10 px-4 py-2 text-sm font-normal text-white backdrop-blur-sm border-white/20">
+                Connect with Me
+              </Badge>
+            </div>
+
+            <h2 className="mb-12 text-center text-4xl font-bold">
+              Let's <span className="text-purple-400">Connect</span>
+            </h2>
+
+            <div className="flex justify-center gap-6">
+              {portfolio.github && (
+                <a
+                  href={portfolio.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/5 backdrop-blur-sm transition-all hover:border-purple-500/50 hover:bg-purple-500/10"
+                >
+                  <Github className="h-8 w-8 text-white transition-colors group-hover:text-purple-400" />
+                </a>
+              )}
+              {portfolio.linkedin && (
+                <a
+                  href={portfolio.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/5 backdrop-blur-sm transition-all hover:border-purple-500/50 hover:bg-purple-500/10"
+                >
+                  <Linkedin className="h-8 w-8 text-white transition-colors group-hover:text-purple-400" />
+                </a>
+              )}
+              {portfolio.twitter && (
+                <a
+                  href={portfolio.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/5 backdrop-blur-sm transition-all hover:border-purple-500/50 hover:bg-purple-500/10"
+                >
+                  <Twitter className="h-8 w-8 text-white transition-colors group-hover:text-purple-400" />
+                </a>
               )}
             </div>
           </div>
