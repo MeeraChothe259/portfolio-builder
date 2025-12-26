@@ -1,8 +1,7 @@
 services:
   # PostgreSQL Database
-  - type: pserv
+  - type: postgres
     name: portfolio-db
-    env: docker
     plan: free
     
   # Web Service
