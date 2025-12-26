@@ -4,13 +4,11 @@ services:
     name: portfolio-db
     env: docker
     plan: free
-    region: oregon
     
   # Web Service
   - type: web
     name: portfolio-builder
     env: node
-    region: oregon
     plan: free
     buildCommand: npm install && npm run build
     startCommand: npm start
