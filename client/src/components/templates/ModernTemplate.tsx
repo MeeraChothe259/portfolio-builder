@@ -65,15 +65,27 @@ export function ModernTemplate({ portfolio, getInitials }: ModernTemplateProps) 
                             <h2 className="text-4xl font-bold text-gray-900">Skills</h2>
                         </div>
 
-                        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-                            {skills.map((skill, index) => (
-                                <div
-                                    key={index}
-                                    className="group rounded-2xl border border-white/20 bg-white/60 p-6 shadow-lg backdrop-blur-lg transition-all hover:scale-105 hover:bg-white/80"
-                                >
-                                    <p className="text-center font-semibold text-gray-800">{skill}</p>
-                                </div>
-                            ))}
+                        <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+                            <div className="flex items-center justify-center md:justify-start [&_div]:mx-2 animate-scroll">
+                                {[...skills, ...skills, ...skills].map((skill, index) => (
+                                    <div
+                                        key={index}
+                                        className="group rounded-2xl border border-white/20 bg-white/60 p-6 shadow-lg backdrop-blur-lg transition-all hover:scale-105 hover:bg-white/80 min-w-[200px]"
+                                    >
+                                        <p className="text-center font-semibold text-gray-800 whitespace-nowrap">{skill}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex items-center justify-center md:justify-start [&_div]:mx-2 animate-scroll" aria-hidden="true">
+                                {[...skills, ...skills, ...skills].map((skill, index) => (
+                                    <div
+                                        key={`dup-${index}`}
+                                        className="group rounded-2xl border border-white/20 bg-white/60 p-6 shadow-lg backdrop-blur-lg transition-all hover:scale-105 hover:bg-white/80 min-w-[200px]"
+                                    >
+                                        <p className="text-center font-semibold text-gray-800 whitespace-nowrap">{skill}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </section>

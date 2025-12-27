@@ -100,10 +100,15 @@ export function DataAnalystTemplate({ portfolio, getInitials }: DataAnalystTempl
         <div className="container mx-auto max-w-6xl">
           <div className="mb-8">
             <div className="mb-4 flex justify-center"><Badge className="bg-white/10 px-4 py-2 text-sm font-normal text-white backdrop-blur-sm border-white/20">Analytics Skills</Badge></div>
-            <div className="overflow-x-auto pb-4">
-              <div className="flex gap-3 px-4">
-                {technicalSkills.map((skill, index) => (
+            <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+              <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll">
+                {[...technicalSkills, ...technicalSkills, ...technicalSkills].map((skill, index) => (
                   <Badge key={index} className="whitespace-nowrap rounded-full border border-amber-500/30 bg-amber-500/10 px-6 py-2 text-sm font-normal text-amber-400 backdrop-blur-sm">{skill}</Badge>
+                ))}
+              </div>
+              <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll" aria-hidden="true">
+                {[...technicalSkills, ...technicalSkills, ...technicalSkills].map((skill, index) => (
+                  <Badge key={`dup-${index}`} className="whitespace-nowrap rounded-full border border-amber-500/30 bg-amber-500/10 px-6 py-2 text-sm font-normal text-amber-400 backdrop-blur-sm">{skill}</Badge>
                 ))}
               </div>
             </div>
@@ -111,10 +116,15 @@ export function DataAnalystTemplate({ portfolio, getInitials }: DataAnalystTempl
           {tools.length > 0 && (
             <div className="mb-8">
               <div className="mb-4 flex justify-center"><Badge className="bg-white/10 px-4 py-2 text-sm font-normal text-white backdrop-blur-sm border-white/20">Tools & Platforms</Badge></div>
-              <div className="overflow-x-auto pb-4">
-                <div className="flex gap-3 px-4">
-                  {tools.map((tool, index) => (
+              <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+                <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll">
+                  {[...tools, ...tools, ...tools].map((tool, index) => (
                     <Badge key={index} className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm">{tool}</Badge>
+                  ))}
+                </div>
+                <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll" aria-hidden="true">
+                  {[...tools, ...tools, ...tools].map((tool, index) => (
+                    <Badge key={`dup-${index}`} className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm">{tool}</Badge>
                   ))}
                 </div>
               </div>
@@ -122,10 +132,15 @@ export function DataAnalystTemplate({ portfolio, getInitials }: DataAnalystTempl
           )}
           <div>
             <div className="mb-4 flex justify-center"><Badge className="bg-white/10 px-4 py-2 text-sm font-normal text-white backdrop-blur-sm border-white/20">Soft Skills</Badge></div>
-            <div className="overflow-x-auto pb-4">
-              <div className="flex gap-3 px-4">
-                {softSkills.map((skill, index) => (
+            <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+              <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll">
+                {[...softSkills, ...softSkills, ...softSkills].map((skill, index) => (
                   <Badge key={index} className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm">{skill}</Badge>
+                ))}
+              </div>
+              <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll" aria-hidden="true">
+                {[...softSkills, ...softSkills, ...softSkills].map((skill, index) => (
+                  <Badge key={`dup-${index}`} className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm">{skill}</Badge>
                 ))}
               </div>
             </div>

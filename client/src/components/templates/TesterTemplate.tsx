@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Youtube,
   CheckCircle2,
+  Mouse,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -56,35 +57,74 @@ export function TesterTemplate({ portfolio, getInitials }: TesterTemplateProps) 
     setCurrentAchievementIndex((prev) => (prev - 1 + achievements.length) % Math.max(achievements.length, 1));
   };
 
+  // Ensure marquee has enough items for consistent speed
+  const getMarqueeItems = (items: string[]) => {
+    if (!items || items.length === 0) return [];
+    // Target ~20 items minimum to ensure the container is wide enough for the fixed animation duration
+    const minItems = 20;
+    const repeats = Math.ceil(minItems / items.length);
+    return Array(repeats).fill(items).flat();
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white selection:bg-teal-500/30">
+      {/* Background Gradients */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-teal-500/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-cyan-500/10 blur-[120px]" />
+        <div className="absolute top-[20%] right-[20%] w-[20%] h-[20%] rounded-full bg-emerald-500/5 blur-[80px]" />
+      </div>
+
       {/* Hero Section */}
-      <section className="relative flex min-h-screen flex-col items-center justify-center px-4 py-20">
+      <section className="relative flex min-h-screen flex-col items-center justify-center px-4 py-20 z-10 overflow-hidden">
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+
         {/* Greeting Badge */}
-        <div className="mb-8 animate-fade-in">
-          <Badge className="bg-white/10 px-4 py-2 text-sm font-normal text-white backdrop-blur-sm border-white/20">
+        <div className="mb-8 animate-fade-in relative">
+          <Badge className="bg-white/5 px-6 py-2 text-sm font-normal text-teal-300 backdrop-blur-md border border-teal-500/20 shadow-[0_0_15px_rgba(20,184,166,0.2)]">
             <CheckCircle2 className="mr-2 inline h-4 w-4" />
             Hello, I'm {portfolio.user.name.split(' ')[0]} 👋
           </Badge>
         </div>
 
         {/* Main Headline */}
-        <h1 className="mb-4 text-center text-5xl font-bold leading-tight md:text-7xl animate-fade-in-up">
+        <h1 className="mb-6 text-center text-5xl font-bold leading-tight md:text-8xl animate-fade-in-up tracking-tight">
           Hi Everyone, I'm{" "}
-          <span className="bg-gradient-to-r from-teal-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+          <br className="md:hidden" />
+          <span className="bg-gradient-to-r from-teal-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(45,212,191,0.3)]">
             {portfolio.user.name}
           </span>
         </h1>
 
         {/* Subtitle */}
-        <p className="mb-8 text-center text-2xl font-semibold text-gray-300 md:text-4xl animate-fade-in-up animation-delay-200">
+        <p className="mb-10 text-center text-xl font-medium text-gray-400 md:text-3xl animate-fade-in-up animation-delay-200 max-w-3xl leading-relaxed">
           {portfolio.title || "Ensuring Quality in Every Line of Code!"}
         </p>
 
-
+        {/* Call to Actions */}
+        <div className="flex gap-4 animate-fade-in-up animation-delay-300 z-20">
+          <Button className="rounded-full bg-teal-600 hover:bg-teal-700 text-white px-8 py-6 text-lg shadow-lg shadow-teal-900/20 transition-all hover:scale-105" onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}>
+            View Work
+          </Button>
+          <Button variant="outline" className="rounded-full border-white/20 bg-white/5 hover:bg-white/10 text-white px-8 py-6 text-lg backdrop-blur-sm transition-all hover:scale-105" onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>
+            More About Me
+          </Button>
+        </div>
 
         {/* Decorative Element */}
-        <div className="absolute bottom-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-gradient-to-r from-teal-500/20 to-cyan-500/20 blur-3xl" />
+        <div className="absolute bottom-0 left-1/2 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-teal-500/50 to-transparent" />
+
+        {/* Professional Scroll Indicator */}
+        <div
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer group"
+          onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+        >
+          <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-teal-500/60 group-hover:text-teal-400 transition-colors">Scroll</span>
+          <div className="h-10 w-6 rounded-full border border-teal-500/30 bg-teal-500/5 p-1 backdrop-blur-sm group-hover:border-teal-500/50 transition-colors">
+            <div className="h-1.5 w-full rounded-full bg-teal-500/50 animate-bounce group-hover:bg-teal-400" />
+          </div>
+        </div>
       </section>
 
       {/* About Section */}
@@ -159,11 +199,21 @@ export function TesterTemplate({ portfolio, getInitials }: TesterTemplateProps) 
                 Testing Skills
               </Badge>
             </div>
-            <div className="overflow-x-auto pb-4">
-              <div className="flex gap-3 px-4">
-                {technicalSkills.map((skill, index) => (
+            <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+              <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll">
+                {getMarqueeItems(technicalSkills).map((skill, index) => (
                   <Badge
                     key={index}
+                    className="whitespace-nowrap rounded-full border border-teal-500/30 bg-teal-500/10 px-6 py-2 text-sm font-normal text-teal-400 backdrop-blur-sm"
+                  >
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll" aria-hidden="true">
+                {getMarqueeItems(technicalSkills).map((skill, index) => (
+                  <Badge
+                    key={`dup-${index}`}
                     className="whitespace-nowrap rounded-full border border-teal-500/30 bg-teal-500/10 px-6 py-2 text-sm font-normal text-teal-400 backdrop-blur-sm"
                   >
                     {skill}
@@ -181,11 +231,21 @@ export function TesterTemplate({ portfolio, getInitials }: TesterTemplateProps) 
                   Testing Tools
                 </Badge>
               </div>
-              <div className="overflow-x-auto pb-4">
-                <div className="flex gap-3 px-4">
-                  {tools.map((tool, index) => (
+              <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+                <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll">
+                  {getMarqueeItems(tools).map((tool, index) => (
                     <Badge
                       key={index}
+                      className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
+                    >
+                      {tool}
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll" aria-hidden="true">
+                  {getMarqueeItems(tools).map((tool, index) => (
+                    <Badge
+                      key={`dup-${index}`}
                       className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
                     >
                       {tool}
@@ -203,11 +263,21 @@ export function TesterTemplate({ portfolio, getInitials }: TesterTemplateProps) 
                 Soft Skills
               </Badge>
             </div>
-            <div className="overflow-x-auto pb-4">
-              <div className="flex gap-3 px-4">
-                {softSkills.map((skill, index) => (
+            <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+              <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll">
+                {getMarqueeItems(softSkills).map((skill, index) => (
                   <Badge
                     key={index}
+                    className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
+                  >
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll" aria-hidden="true">
+                {getMarqueeItems(softSkills).map((skill, index) => (
+                  <Badge
+                    key={`dup-${index}`}
                     className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
                   >
                     {skill}
@@ -220,20 +290,20 @@ export function TesterTemplate({ portfolio, getInitials }: TesterTemplateProps) 
       </section>
 
       {/* Projects Section */}
-      {projects.length > 0 && (
-        <section id="projects" className="px-4 py-20">
-          <div className="container mx-auto max-w-6xl">
-            <div className="mb-12 flex justify-center">
-              <Badge className="bg-white/10 px-4 py-2 text-sm font-normal text-white backdrop-blur-sm border-white/20">
-                Projects
-              </Badge>
-            </div>
+      <section id="projects" className="px-4 py-20">
+        <div className="container mx-auto max-w-6xl">
+          <div className="mb-12 flex justify-center">
+            <Badge className="bg-white/10 px-4 py-2 text-sm font-normal text-white backdrop-blur-sm border-white/20">
+              Projects
+            </Badge>
+          </div>
 
-            <h2 className="mb-12 text-center text-4xl font-bold">
-              My Latest <span className="text-gray-400">Testing Projects</span>
-            </h2>
+          <h2 className="mb-12 text-center text-4xl font-bold">
+            My Latest <span className="text-gray-400">Testing Projects</span>
+          </h2>
 
-            {/* Project Carousel */}
+          {/* Project Carousel */}
+          {projects.length > 0 ? (
             <div className="relative">
               <div className="grid gap-6 md:grid-cols-3">
                 {projects.slice(currentProjectIndex, currentProjectIndex + 3).map((project) => (
@@ -313,9 +383,13 @@ export function TesterTemplate({ portfolio, getInitials }: TesterTemplateProps) 
                 </>
               )}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="text-center text-gray-400">
+              <p>No projects added yet.</p>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Achievements Section */}
       {achievements.length > 0 && (

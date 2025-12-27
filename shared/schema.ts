@@ -9,6 +9,7 @@ export const projectSchema = z.object({
   description: z.string(),
   link: z.string().url().optional().or(z.literal("")),
   technologies: z.array(z.string()).optional(),
+  image: z.string().optional(), // base64 encoded image
 });
 
 // Education schema
@@ -31,6 +32,16 @@ export const experienceSchema = z.object({
   startDate: z.string(),
   endDate: z.string().optional(),
   current: z.boolean().optional(),
+});
+
+// Achievement schema
+export const achievementSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1, "Title is required"),
+  description: z.string(),
+  date: z.string(),
+  issuer: z.string().optional(),
+  image: z.string().optional(), // base64 encoded image
 });
 
 // Users table
@@ -60,6 +71,7 @@ export const portfolios = pgTable("portfolios", {
   projects: jsonb("projects").$type<z.infer<typeof projectSchema>[]>().default([]),
   education: jsonb("education").$type<z.infer<typeof educationSchema>[]>().default([]),
   experience: jsonb("experience").$type<z.infer<typeof experienceSchema>[]>().default([]),
+  achievements: jsonb("achievements").$type<z.infer<typeof achievementSchema>[]>().default([]),
 });
 
 // Insert schemas
@@ -94,6 +106,7 @@ export const updatePortfolioSchema = z.object({
   projects: z.array(projectSchema).optional(),
   education: z.array(educationSchema).optional(),
   experience: z.array(experienceSchema).optional(),
+  achievements: z.array(achievementSchema).optional(),
   // role drives which visual template is used on the public portfolio page
   role: z.enum(["developer", "tester", "ai_ml", "data_analyst", "premium", "minimal", "creative", "modern", "compact"]).optional(),
 });
@@ -106,6 +119,7 @@ export type InsertPortfolio = z.infer<typeof insertPortfolioSchema>;
 export type Project = z.infer<typeof projectSchema>;
 export type Education = z.infer<typeof educationSchema>;
 export type Experience = z.infer<typeof experienceSchema>;
+export type Achievement = z.infer<typeof achievementSchema>;
 
 // Auth response type
 export type AuthResponse = {

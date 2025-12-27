@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { getAuthToken } from "@/lib/auth";
+import { getAuthToken, useAuth } from "@/lib/auth";
+import { useLocation } from "wouter";
 import type { Portfolio, AIAnalysisResult } from "@shared/schema";
 import {
   Loader2,
@@ -20,6 +21,8 @@ interface AIMentorSectionProps {
 
 export function AIMentorSection({ portfolio }: AIMentorSectionProps) {
   const { toast } = useToast();
+  const { logout } = useAuth();
+  const [, setLocation] = useLocation();
   const [jobDescription, setJobDescription] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(null);
@@ -61,7 +64,15 @@ export function AIMentorSection({ portfolio }: AIMentorSectionProps) {
 
       if (!response.ok) {
         if (response.status === 401) {
-          throw new Error("Session expired. Please log in again.");
+          // Session expired - log out and redirect to login
+          logout();
+          toast({
+            variant: "destructive",
+            title: "Session Expired",
+            description: "Your session has expired. Please log in again.",
+          });
+          setLocation("/");
+          return;
         }
 
         // Try to get error details from response

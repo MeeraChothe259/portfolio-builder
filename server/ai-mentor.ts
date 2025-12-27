@@ -231,3 +231,118 @@ function getFallbackAnalysis(portfolio: Portfolio): AIAnalysisResult {
     analyzedAt: new Date().toISOString(),
   };
 }
+
+/**
+ * GENERATIVE AI OPTIMIZER
+ * Rewrites portfolio content to match a specific Job Description
+ */
+export async function optimizePortfolioWithAI(
+  portfolio: Portfolio,
+  jobDescription: string
+): Promise<Partial<Portfolio>> {
+  if (!process.env.GROQ_API_KEY) {
+    throw new Error("GROQ_API_KEY is missing");
+  }
+
+  const prompt = `
+    You are an expert Resume Writer and ATS Optimizer.
+    I will provide a User's Portfolio and a Target Job Description.
+    
+    Your task is to REWRITE and OPTIMIZE the user's content to strictly match the Job Description.
+    
+    ### TARGET JOB DESCRIPTION:
+    ${jobDescription}
+
+    ### USER PORTFOLIO:
+    - Current Title: ${portfolio.title}
+    - Bio: ${portfolio.bio}
+    - Skills: ${portfolio.skills?.join(", ")}
+    - Projects: ${JSON.stringify(portfolio.projects?.map(p => ({ title: p.title, desc: p.description })))}
+
+    ### INSTRUCTIONS:
+    1. **Title:** Update the professional title to match the target role (e.g., "Senior React Developer").
+    2. **Bio:** Rewrite the bio (max 400 chars) to highlight experience relevant to the JD. Use keywords from the JD.
+    3. **Skills:** Return a list of 10-15 top skills. Prioritize skills found in BOTH the JD and the User's background.
+    4. **Projects:** Rewrite the descriptions for EACH project to emphasize the skills found in the JD. Use the STAR method if possible. Stick to the same number of projects.
+    5. **Experience:** Rewrite the descriptions for EACH experience entry to highlight relevance to the JD. Stick to the same number of experience entries.
+    
+    ### RETURN JSON ONLY:
+    {
+      "title": "New Title",
+      "bio": "Optimized Bio...",
+      "skills": ["Skill 1", "Skill 2"...],
+      "projects": [
+        { "title": "Optimized Title", "description": "Optimized Description" }
+      ],
+      "experience": [
+        { "company": "Company Name", "position": "Position", "description": "Optimized Description" }
+      ]
+    }
+  `;
+
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [
+        { role: "system", content: "You are a JSON-only API. specific response format required." },
+        { role: "user", content: prompt },
+      ],
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.5,
+      response_format: { type: "json_object" },
+    });
+
+    const response = completion.choices[0]?.message?.content;
+    if (!response) throw new Error("Empty AI response");
+
+    return JSON.parse(response);
+
+  } catch (error) {
+    console.warn("⚠️ AI Optimization failed (likely invalid API key). Using fallback.");
+    return getFallbackOptimization(portfolio, jobDescription);
+  }
+}
+
+/**
+ * Heuristic Fallback for Optimization
+ * Used when AI service is unavailable
+ */
+function getFallbackOptimization(portfolio: Portfolio, jd: string): Partial<Portfolio> {
+  // 1. Title Extraction (Simple heuristic: look for "Senior/Junior X Developer" in JD)
+  const titleMatch = jd.match(/(Senior|Lead|Principal|Junior|Staff)?\s?([\w\s]+)?(Developer|Engineer|Architect)/i);
+  const newTitle = titleMatch ? titleMatch[0] : portfolio.title || "Software Engineer";
+
+  // 2. Skill Extraction (Find common tech keywords in JD)
+  const commonTech = ["React", "Node", "TypeScript", "JavaScript", "Python", "Java", "AWS", "Docker", "Kubernetes", "SQL", "NoSQL", "Angular", "Vue", "C++", "C#", "Go", "Rust"];
+  const newSkills = new Set(portfolio.skills || []);
+
+  commonTech.forEach(tech => {
+    if (jd.toLowerCase().includes(tech.toLowerCase())) {
+      newSkills.add(tech);
+    }
+  });
+
+  // 3. Bio Construction
+  const bio = `I am a passionate ${newTitle} with experience in ${Array.from(newSkills).slice(0, 3).join(", ")}. I have a proven track record of delivering high-quality software solutions and am eager to apply my skills to this new challenge.`;
+
+  // 4. Projects & Experience (Rewrite to show optimization effect)
+  const topSkills = Array.from(newSkills).slice(0, 3).join(", ");
+
+  const optimizedProjects = portfolio.projects?.map(p => ({
+    title: p.title,
+    description: `[Optimized for ${newTitle}] ${p.description} Demonstrated proficiency in ${topSkills}.`
+  })) || [];
+
+  const optimizedExperience = portfolio.experience?.map(e => ({
+    company: e.company,
+    position: e.position,
+    description: `[Optimized] ${e.description} Focused on delivering scalable solutions using ${topSkills}.`
+  })) || [];
+
+  return {
+    title: newTitle,
+    bio: bio,
+    skills: Array.from(newSkills).slice(0, 15),
+    projects: optimizedProjects as any,
+    experience: optimizedExperience as any
+  };
+}

@@ -10,7 +10,7 @@ import {
   type AuthenticatedRequest,
 } from "./auth";
 import { z } from "zod";
-import { analyzePortfolioWithAI } from "./ai-mentor";
+import { analyzePortfolioWithAI, optimizePortfolioWithAI } from "./ai-mentor";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -62,6 +62,7 @@ export async function registerRoutes(
         projects: [],
         education: [],
         experience: [],
+        achievements: [],
       });
 
       const token = generateToken({ userId: user.id, email: user.email });
@@ -147,6 +148,7 @@ export async function registerRoutes(
           projects: validatedData.projects || [],
           education: validatedData.education || [],
           experience: validatedData.experience || [],
+          achievements: validatedData.achievements || [],
         });
         console.log(`[PORTFOLIO CREATE] Portfolio created with ID: ${portfolio.id}`);
       } else {
@@ -167,6 +169,7 @@ export async function registerRoutes(
         if (validatedData.projects !== undefined) updates.projects = validatedData.projects;
         if (validatedData.education !== undefined) updates.education = validatedData.education;
         if (validatedData.experience !== undefined) updates.experience = validatedData.experience;
+        if (validatedData.achievements !== undefined) updates.achievements = validatedData.achievements;
         if (validatedData.role !== undefined) updates.role = validatedData.role;
 
         portfolio = await storage.updatePortfolio(userId, updates);
@@ -205,6 +208,36 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Get public portfolio error:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // --- NEW: Layout Optimization Route ---
+  app.post("/api/portfolio/optimize", authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user!.userId;
+      const { jobDescription } = req.body;
+
+      if (!jobDescription) {
+        res.status(400).json({ message: "Job Description is required" });
+        return;
+      }
+
+      console.log(`[AI OPTIMIZER] Optimizing portfolio for user ID: ${userId}`);
+
+      const portfolio = await storage.getPortfolioByUserId(userId);
+      if (!portfolio) {
+        res.status(404).json({ message: "Portfolio not found" });
+        return;
+      }
+
+      // Optimize content
+      const optimizedData = await optimizePortfolioWithAI(portfolio, jobDescription);
+
+      res.json(optimizedData);
+
+    } catch (error) {
+      console.error("Portfolio optimization error:", error);
+      res.status(500).json({ message: "Failed to optimize portfolio" });
     }
   });
 

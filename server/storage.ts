@@ -76,6 +76,7 @@ export class MemStorage implements IStorage {
       projects: (insertPortfolio.projects as any) || [],
       education: (insertPortfolio.education as any) || [],
       experience: (insertPortfolio.experience as any) || [],
+      achievements: (insertPortfolio as any).achievements || [],
     };
     this.portfolios.set(id, portfolio);
     return portfolio;

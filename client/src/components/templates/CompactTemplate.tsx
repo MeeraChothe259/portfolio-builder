@@ -102,15 +102,27 @@ export function CompactTemplate({ portfolio, getInitials }: CompactTemplateProps
                                 <Code className="h-4 w-4" />
                                 Skills
                             </h3>
-                            <div className="flex flex-wrap gap-2">
-                                {skills.map((skill, index) => (
-                                    <span
-                                        key={index}
-                                        className="rounded-md bg-teal-100 px-2 py-1 text-xs font-medium text-teal-700"
-                                    >
-                                        {skill}
-                                    </span>
-                                ))}
+                            <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_32px,_black_calc(100%-32px),transparent_100%)]">
+                                <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll">
+                                    {[...skills, ...skills, ...skills].map((skill, index) => (
+                                        <span
+                                            key={index}
+                                            className="whitespace-nowrap rounded-md bg-teal-100 px-2 py-1 text-xs font-medium text-teal-700"
+                                        >
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
+                                <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll" aria-hidden="true">
+                                    {[...skills, ...skills, ...skills].map((skill, index) => (
+                                        <span
+                                            key={`dup-${index}`}
+                                            className="whitespace-nowrap rounded-md bg-teal-100 px-2 py-1 text-xs font-medium text-teal-700"
+                                        >
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     )}

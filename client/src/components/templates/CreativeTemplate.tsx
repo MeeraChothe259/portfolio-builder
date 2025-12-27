@@ -85,16 +85,29 @@ export function CreativeTemplate({ portfolio, getInitials }: CreativeTemplatePro
                                 Skills & Expertise
                             </span>
                         </h2>
-                        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-                            {skills.map((skill, index) => (
-                                <div
-                                    key={index}
-                                    className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
-                                >
-                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 transition-opacity group-hover:opacity-100" />
-                                    <p className="relative text-lg font-semibold text-gray-800">{skill}</p>
-                                </div>
-                            ))}
+                        <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+                            <div className="flex items-center justify-center md:justify-start [&_div]:mx-2 animate-scroll">
+                                {[...skills, ...skills].map((skill, index) => (
+                                    <div
+                                        key={index}
+                                        className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl min-w-[200px]"
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                                        <p className="relative text-lg font-semibold text-gray-800 whitespace-nowrap text-center">{skill}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex items-center justify-center md:justify-start [&_div]:mx-2 animate-scroll" aria-hidden="true">
+                                {[...skills, ...skills].map((skill, index) => (
+                                    <div
+                                        key={`dup-${index}`}
+                                        className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl min-w-[200px]"
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                                        <p className="relative text-lg font-semibold text-gray-800 whitespace-nowrap text-center">{skill}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </section>

@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { PublicPortfolio } from "@shared/schema";
+import type { PublicPortfolio, Achievement } from "@shared/schema";
 import {
     Github,
     Linkedin,
@@ -23,13 +23,13 @@ export function PremiumTemplate({ portfolio, getInitials }: PremiumTemplateProps
     const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
 
     const projects = portfolio.projects || [];
-    const achievements = portfolio.experience || [];
+    const achievements = (portfolio as any).achievements || [];
 
     // Calculate stats
-    const monthsOfExperience = achievements.length > 0 ? achievements.length * 6 : 0;
-    const internshipsCompleted = achievements.filter(exp =>
+    const monthsOfExperience = portfolio.experience?.length || 0;
+    const internshipsCompleted = portfolio.experience?.filter((exp: any) =>
         exp.position.toLowerCase().includes('intern')
-    ).length;
+    ).length || 0;
     const projectsCompleted = projects.length;
     const skillsCount = (portfolio.skills || []).length;
 
@@ -158,11 +158,21 @@ export function PremiumTemplate({ portfolio, getInitials }: PremiumTemplateProps
                                 Skills
                             </Badge>
                         </div>
-                        <div className="overflow-x-auto pb-4">
-                            <div className="flex gap-3 px-4">
-                                {technicalSkills.map((skill, index) => (
+                        <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+                            <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll">
+                                {[...technicalSkills, ...technicalSkills, ...technicalSkills].map((skill, index) => (
                                     <Badge
                                         key={index}
+                                        className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
+                                    >
+                                        {skill}
+                                    </Badge>
+                                ))}
+                            </div>
+                            <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll" aria-hidden="true">
+                                {[...technicalSkills, ...technicalSkills, ...technicalSkills].map((skill, index) => (
+                                    <Badge
+                                        key={`dup-${index}`}
                                         className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
                                     >
                                         {skill}
@@ -180,11 +190,21 @@ export function PremiumTemplate({ portfolio, getInitials }: PremiumTemplateProps
                                     Tools / Software
                                 </Badge>
                             </div>
-                            <div className="overflow-x-auto pb-4">
-                                <div className="flex gap-3 px-4">
-                                    {tools.map((tool, index) => (
+                            <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+                                <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll">
+                                    {[...tools, ...tools, ...tools].map((tool, index) => (
                                         <Badge
                                             key={index}
+                                            className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
+                                        >
+                                            {tool}
+                                        </Badge>
+                                    ))}
+                                </div>
+                                <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll" aria-hidden="true">
+                                    {[...tools, ...tools, ...tools].map((tool, index) => (
+                                        <Badge
+                                            key={`dup-${index}`}
                                             className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
                                         >
                                             {tool}
@@ -202,11 +222,38 @@ export function PremiumTemplate({ portfolio, getInitials }: PremiumTemplateProps
                                 Soft Skills
                             </Badge>
                         </div>
-                        <div className="overflow-x-auto pb-4">
-                            <div className="flex gap-3 px-4">
+                        <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+                            <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll">
                                 {softSkills.map((skill, index) => (
                                     <Badge
                                         key={index}
+                                        className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
+                                    >
+                                        {skill}
+                                    </Badge>
+                                ))}
+                                {/* Duplicate for marquee loop if needed, though softSkills is static here. Let's duplicate once to be safe */}
+                                {softSkills.map((skill, index) => (
+                                    <Badge
+                                        key={`dup1-${index}`}
+                                        className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
+                                    >
+                                        {skill}
+                                    </Badge>
+                                ))}
+                            </div>
+                            <div className="flex items-center justify-center md:justify-start [&_span]:mx-2 animate-scroll" aria-hidden="true">
+                                {softSkills.map((skill, index) => (
+                                    <Badge
+                                        key={`dup2-${index}`}
+                                        className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
+                                    >
+                                        {skill}
+                                    </Badge>
+                                ))}
+                                {softSkills.map((skill, index) => (
+                                    <Badge
+                                        key={`dup3-${index}`}
                                         className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-6 py-2 text-sm font-normal text-white backdrop-blur-sm"
                                     >
                                         {skill}
@@ -240,9 +287,19 @@ export function PremiumTemplate({ portfolio, getInitials }: PremiumTemplateProps
                                         key={project.id}
                                         className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-white/30"
                                     >
-                                        {/* Project Logo/Title */}
-                                        <div className="mb-4 flex h-32 items-center justify-center rounded-xl bg-white">
-                                            <h3 className="text-2xl font-bold text-black">{project.title}</h3>
+                                        {/* Project Image */}
+                                        <div className="mb-4 h-32 overflow-hidden rounded-xl bg-white">
+                                            {project.image ? (
+                                                <img
+                                                    src={project.image}
+                                                    alt={project.title}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center">
+                                                    <h3 className="text-2xl font-bold text-black">{project.title}</h3>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Project Title */}
@@ -333,19 +390,38 @@ export function PremiumTemplate({ portfolio, getInitials }: PremiumTemplateProps
                         {/* Achievement Carousel */}
                         <div className="relative">
                             <div className="grid gap-6 md:grid-cols-3">
-                                {achievements.slice(currentAchievementIndex, currentAchievementIndex + 3).map((achievement) => (
+                                {achievements.slice(currentAchievementIndex, currentAchievementIndex + 3).map((achievement: Achievement) => (
                                     <div
                                         key={achievement.id}
                                         className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm transition-all hover:border-white/30"
                                     >
-                                        {/* Achievement Image Placeholder */}
-                                        <div className="h-48 bg-gradient-to-br from-purple-600/20 to-blue-600/20" />
+                                        {/* Achievement Image */}
+                                        <div className="h-48 overflow-hidden">
+                                            {achievement.image ? (
+                                                <img
+                                                    src={achievement.image}
+                                                    alt={achievement.title}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="h-full bg-gradient-to-br from-purple-600/20 to-blue-600/20 flex items-center justify-center">
+                                                    <div className="text-center">
+                                                        <h3 className="text-xl font-bold mb-2">{achievement.title}</h3>
+                                                        <p className="text-sm text-gray-400">{achievement.issuer}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
 
                                         {/* Content */}
                                         <div className="p-6">
-                                            <h3 className="mb-2 text-xl font-bold">{achievement.position}</h3>
-                                            <p className="text-sm text-gray-400 line-clamp-4">
-                                                {achievement.description || `Worked at ${achievement.company} from ${achievement.startDate} to ${achievement.current ? 'Present' : achievement.endDate}`}
+                                            <h3 className="mb-2 text-xl font-bold">{achievement.title}</h3>
+                                            {achievement.issuer && (
+                                                <p className="mb-2 text-sm text-purple-400">{achievement.issuer}</p>
+                                            )}
+                                            <p className="mb-2 text-sm text-gray-500">{achievement.date}</p>
+                                            <p className="line-clamp-3 text-sm text-gray-400">
+                                                {achievement.description}
                                             </p>
                                         </div>
                                     </div>

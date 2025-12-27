@@ -50,15 +50,51 @@ export function MinimalTemplate({ portfolio, getInitials }: MinimalTemplateProps
                 <section className="border-t border-gray-200 py-20">
                     <div className="container mx-auto max-w-3xl px-6">
                         <h2 className="mb-8 text-sm uppercase tracking-widest text-gray-500">Skills</h2>
-                        <div className="flex flex-wrap gap-3">
-                            {portfolio.skills.map((skill, index) => (
-                                <span
-                                    key={index}
-                                    className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700"
-                                >
-                                    {skill}
-                                </span>
-                            ))}
+                        <div className="relative flex overflow-x-hidden group">
+                            <div className="animate-scroll flex gap-3 whitespace-nowrap py-4">
+                                {/* Duplicate items for seamless loop */}
+                                {[...portfolio.skills, ...portfolio.skills, ...portfolio.skills, ...portfolio.skills].map((skill, index) => (
+                                    <span
+                                        key={index}
+                                        className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700"
+                                    >
+                                        {skill}
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="absolute top-0 animate-scroll2 flex gap-3 whitespace-nowrap py-4" aria-hidden="true">
+                                {/* Second layer for continuous effect (optional, or just rely on the first one large enough) */}
+                                {/* Actually, standard marquee: outer overflow-hidden, inner width fit-content with duplicated items moving left. 
+                                    The standard Tailwind way: parent relative flex overflow-hidden. 
+                                    Child: animate-scroll flex min-w-full shrink-0 items-center justify-around gap-4.
+                                    We need TWO scrolling children for the true infinite effect commonly seen in Tailwind components.
+                                */}
+                            </div>
+                        </div>
+                        {/* Let's use a simpler known marquee pattern.
+                            Container: overflow-hidden
+                            Inner: flex w-max animate-scroll
+                            Items: [original] [original] ... enough to cover screen
+                        */}
+                        <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+                            <ul className="flex items-center justify-center md:justify-start [&_li]:mx-2 [&_img]:max-w-none animate-scroll">
+                                {[...portfolio.skills, ...portfolio.skills, ...portfolio.skills].map((skill, index) => (
+                                    <li key={index}>
+                                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700 whitespace-nowrap">
+                                            {skill}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                            <ul className="flex items-center justify-center md:justify-start [&_li]:mx-2 [&_img]:max-w-none animate-scroll" aria-hidden="true">
+                                {[...portfolio.skills, ...portfolio.skills, ...portfolio.skills].map((skill, index) => (
+                                    <li key={`duplicate-${index}`}>
+                                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700 whitespace-nowrap">
+                                            {skill}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
                 </section>

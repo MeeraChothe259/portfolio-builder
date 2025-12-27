@@ -29,8 +29,9 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import type { Portfolio, Project, Education, Experience } from "@shared/schema";
+import type { Portfolio, Project, Education, Experience, Achievement } from "@shared/schema";
 import { generateSimpleResumePDF } from "@/lib/resume-generator";
+import { AIOptimizerModal } from "@/components/ai-optimizer-modal";
 import {
   User,
   Code2,
@@ -50,7 +51,21 @@ import {
   Download,
   Upload,
   Image as ImageIcon,
+  Trophy,
+  Maximize2,
+  Minimize2,
+  Eye,
 } from "lucide-react";
+
+import { DeveloperTemplate } from "@/components/templates/DeveloperTemplate";
+import { TesterTemplate } from "@/components/templates/TesterTemplate";
+import { AIMLTemplate } from "@/components/templates/AIMLTemplate";
+import { DataAnalystTemplate } from "@/components/templates/DataAnalystTemplate";
+import { PremiumTemplate } from "@/components/templates/PremiumTemplate";
+import { MinimalTemplate } from "@/components/templates/MinimalTemplate";
+import { CreativeTemplate } from "@/components/templates/CreativeTemplate";
+import { ModernTemplate } from "@/components/templates/ModernTemplate";
+import { CompactTemplate } from "@/components/templates/CompactTemplate";
 
 const ROLE_OPTIONS = ["developer", "tester", "ai_ml", "data_analyst", "premium"] as const;
 type Role = (typeof ROLE_OPTIONS)[number];
@@ -84,6 +99,7 @@ export default function EditPortfolio() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [education, setEducation] = useState<Education[]>([]);
   const [experience, setExperience] = useState<Experience[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
   const form = useForm<PortfolioFormValues>({
@@ -119,6 +135,7 @@ export default function EditPortfolio() {
           setProjects(data.projects || []);
           setEducation(data.education || []);
           setExperience(data.experience || []);
+          setAchievements((data as any).achievements || []);
           setProfilePicture((data as any).profilePicture || null);
         }
       } catch (error) {
@@ -140,6 +157,7 @@ export default function EditPortfolio() {
         projects,
         education,
         experience,
+        achievements,
         profilePicture,
       });
       toast({
@@ -234,6 +252,69 @@ export default function EditPortfolio() {
 
   const removeExperience = (id: string) => {
     setExperience(experience.filter((e) => e.id !== id));
+  };
+
+  const addAchievement = () => {
+    setAchievements([
+      ...achievements,
+      {
+        id: crypto.randomUUID(),
+        title: "",
+        description: "",
+        date: "",
+        issuer: "",
+      },
+    ]);
+  };
+
+  const updateAchievement = (id: string, updates: Partial<Achievement>) => {
+    setAchievements(achievements.map((a) => (a.id === id ? { ...a, ...updates } : a)));
+  };
+
+  const removeAchievement = (id: string) => {
+    setAchievements(achievements.filter((a) => a.id !== id));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, itemId: string, itemType: 'project' | 'achievement') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file type first
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please choose an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+
+      // Update the appropriate item with the image
+      if (itemType === 'project') {
+        updateProject(itemId, { image: base64 });
+      } else {
+        updateAchievement(itemId, { image: base64 });
+      }
+
+      toast({
+        title: "Image uploaded successfully",
+        description: "Image added to your portfolio.",
+      });
+    };
+
+    reader.onerror = () => {
+      toast({
+        title: "Error reading file",
+        description: "Unable to read the file. Please try again.",
+        variant: "destructive",
+      });
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const handleProfilePictureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -380,6 +461,47 @@ export default function EditPortfolio() {
     }
   };
 
+  const handleApplyOptimization = (data: {
+    title: string;
+    bio: string;
+    skills: string[];
+    projects?: { title: string; description: string }[];
+    experience?: { company: string; position: string; description: string }[];
+  }) => {
+    form.setValue("title", data.title);
+    form.setValue("bio", data.bio);
+    setSkills(data.skills);
+
+    // Merge Projects (Preserve ID and Image)
+    if (data.projects && data.projects.length > 0) {
+      const mergedProjects = projects.map((p, i) => {
+        const optimized = data.projects?.[i];
+        if (optimized) {
+          return { ...p, title: optimized.title, description: optimized.description };
+        }
+        return p;
+      });
+      setProjects(mergedProjects);
+    }
+
+    // Merge Experience
+    if (data.experience && data.experience.length > 0) {
+      const mergedExperience = experience.map((e, i) => {
+        const optimized = data.experience?.[i];
+        if (optimized) {
+          return { ...e, company: optimized.company, position: optimized.position, description: optimized.description };
+        }
+        return e;
+      });
+      setExperience(mergedExperience);
+    }
+
+    toast({
+      title: "Full Optimization Applied!",
+      description: "Projects, Experience, Skills, and Bio have been updated. Please review and Save.",
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto max-w-3xl px-4 py-8">
@@ -411,6 +533,7 @@ export default function EditPortfolio() {
           </h1>
         </div>
         <div className="flex gap-2">
+          <AIOptimizerModal onApply={handleApplyOptimization} />
           <Button
             variant="outline"
             onClick={downloadResume}
@@ -844,6 +967,49 @@ export default function EditPortfolio() {
                         data-testid={`input-project-description-${index}`}
                       />
                     </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Project Image/Screenshot</label>
+                      <div className="flex gap-2">
+                        <input
+                          id={`project-image-${project.id}`}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleImageUpload(e, project.id, 'project')}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          asChild
+                        >
+                          <label htmlFor={`project-image-${project.id}`} className="cursor-pointer">
+                            <Upload className="mr-2 h-4 w-4" />
+                            Upload Image
+                          </label>
+                        </Button>
+                        {project.image && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => updateProject(project.id, { image: undefined })}
+                          >
+                            <X className="mr-2 h-4 w-4" />
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                      {project.image && (
+                        <div className="mt-2">
+                          <img
+                            src={project.image}
+                            alt="Project preview"
+                            className="h-32 w-full max-w-xs rounded object-cover border"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))
               )}
@@ -971,6 +1137,150 @@ export default function EditPortfolio() {
                       >
                         Currently studying here
                       </label>
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Achievements */}
+          <Card data-testid="card-achievements">
+            <CardHeader>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5" />
+                    Achievements
+                  </CardTitle>
+                  <CardDescription>
+                    Awards, certifications, and accomplishments
+                  </CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addAchievement}
+                  data-testid="button-add-achievement"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Achievement
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {achievements.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  No achievements yet. Click "Add Achievement" to get started.
+                </p>
+              ) : (
+                achievements.map((achievement, index) => (
+                  <div
+                    key={achievement.id}
+                    className="relative space-y-4 rounded-lg border p-4"
+                    data-testid={`achievement-item-${index}`}
+                  >
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-2"
+                      onClick={() => removeAchievement(achievement.id)}
+                      data-testid={`button-remove-achievement-${index}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <div className="grid gap-4 pr-8 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Title</label>
+                        <Input
+                          placeholder="e.g., First Place in Hackathon"
+                          value={achievement.title}
+                          onChange={(e) =>
+                            updateAchievement(achievement.id, { title: e.target.value })
+                          }
+                          data-testid={`input-achievement-title-${index}`}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Issuer</label>
+                        <Input
+                          placeholder="e.g., Google, Microsoft"
+                          value={achievement.issuer || ""}
+                          onChange={(e) =>
+                            updateAchievement(achievement.id, { issuer: e.target.value })
+                          }
+                          data-testid={`input-achievement-issuer-${index}`}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Description</label>
+                      <Textarea
+                        placeholder="Describe your achievement..."
+                        className="min-h-20 resize-none"
+                        value={achievement.description}
+                        onChange={(e) =>
+                          updateAchievement(achievement.id, { description: e.target.value })
+                        }
+                        data-testid={`input-achievement-description-${index}`}
+                      />
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Date</label>
+                        <Input
+                          placeholder="e.g., December 2023"
+                          value={achievement.date}
+                          onChange={(e) =>
+                            updateAchievement(achievement.id, { date: e.target.value })
+                          }
+                          data-testid={`input-achievement-date-${index}`}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Certificate/Image</label>
+                        <div className="flex gap-2">
+                          <input
+                            id={`achievement-image-${achievement.id}`}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleImageUpload(e, achievement.id, 'achievement')}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            asChild
+                          >
+                            <label htmlFor={`achievement-image-${achievement.id}`} className="cursor-pointer">
+                              <Upload className="mr-2 h-4 w-4" />
+                              Upload Image
+                            </label>
+                          </Button>
+                          {achievement.image && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => updateAchievement(achievement.id, { image: undefined })}
+                            >
+                              <X className="mr-2 h-4 w-4" />
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+                        {achievement.image && (
+                          <div className="mt-2">
+                            <img
+                              src={achievement.image}
+                              alt="Achievement preview"
+                              className="h-20 w-20 rounded object-cover border"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))
